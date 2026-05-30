@@ -1,0 +1,230 @@
+"""
+Database Connection & Query Interface
+
+Provides a clean interface for tenant-aware database operations.
+Ensures strict tenant isolation on all queries.
+"""
+
+import os
+import uuid
+from contextlib import contextmanager
+from typing import Optional, List
+
+from models import (
+    init_db,
+    create_all_tables,
+    Tenant,
+    TenantConfig,
+    KnowledgeSource,
+    VectorEmbedding,
+    InteractionLog,
+)
+
+# Initialize at module load
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost/coastal_alpine_helpdesk")
+engine, SessionLocal = init_db(DATABASE_URL)
+
+
+class TenantAwareDB:
+    """
+    Wrapper class for all database operations.
+    Enforces tenant isolation on every query.
+    """
+    
+    def __init__(self, session):
+        self.session = session
+    
+    # ========== TENANT OPERATIONS ==========
+    
+    def create_tenant(self, company_name: str, industry: str, subscription_tier: str = "Starter") -> Tenant:
+        """Create a new tenant account."""
+        tenant = Tenant(
+            company_name=company_name,
+            industry=industry,
+            subscription_tier=subscription_tier
+        )
+        self.session.add(tenant)
+        self.session.commit()
+        return tenant
+    
+    def get_tenant(self, tenant_id: uuid.UUID) -> Optional[Tenant]:
+        """Retrieve tenant metadata by ID."""
+        return self.session.query(Tenant).filter(Tenant.tenant_id == tenant_id).first()
+    
+    def get_tenant_by_name(self, company_name: str) -> Optional[Tenant]:
+        """Retrieve tenant metadata by company name."""
+        return self.session.query(Tenant).filter(Tenant.company_name == company_name).first()
+    
+    # ========== TENANT CONFIG OPERATIONS ==========
+    
+    def set_tenant_config(
+        self,
+        tenant_id: uuid.UUID,
+        brand_voice: str,
+        escalation_rules: dict,
+        active_channels: dict,
+        custom_instructions: str = None
+    ) -> TenantConfig:
+        """Set or update tenant configuration."""
+        config = self.session.query(TenantConfig).filter(TenantConfig.tenant_id == tenant_id).first()
+        
+        if not config:
+            config = TenantConfig(tenant_id=tenant_id)
+        
+        config.brand_voice = brand_voice
+        config.escalation_rules = escalation_rules
+        config.active_channels = active_channels
+        config.custom_instructions = custom_instructions
+        
+        self.session.add(config)
+        self.session.commit()
+        return config
+    
+    def get_tenant_config(self, tenant_id: uuid.UUID) -> Optional[TenantConfig]:
+        """Retrieve tenant configuration (tenant-isolated)."""
+        return self.session.query(TenantConfig).filter(TenantConfig.tenant_id == tenant_id).first()
+    
+    # ========== KNOWLEDGE SOURCE OPERATIONS ==========
+    
+    def add_knowledge_source(
+        self,
+        tenant_id: uuid.UUID,
+        source_type: str,
+        source_name: str,
+        source_uri: str
+    ) -> KnowledgeSource:
+        """Register a new knowledge source for a tenant."""
+        source = KnowledgeSource(
+            tenant_id=tenant_id,
+            source_type=source_type,
+            source_name=source_name,
+            source_uri=source_uri,
+            sync_status="Pending"
+        )
+        self.session.add(source)
+        self.session.commit()
+        return source
+    
+    def get_tenant_knowledge_sources(self, tenant_id: uuid.UUID, sync_status: str = None) -> List[KnowledgeSource]:
+        """
+        Retrieve knowledge sources for a tenant (tenant-isolated).
+        Optionally filter by sync status.
+        """
+        query = self.session.query(KnowledgeSource).filter(KnowledgeSource.tenant_id == tenant_id)
+        if sync_status:
+            query = query.filter(KnowledgeSource.sync_status == sync_status)
+        return query.all()
+    
+    def update_knowledge_source_status(self, source_id: uuid.UUID, tenant_id: uuid.UUID, sync_status: str, chunk_count: int = 0):
+        """Update the sync status of a knowledge source (with tenant check)."""
+        source = self.session.query(KnowledgeSource).filter(
+            KnowledgeSource.source_id == source_id,
+            KnowledgeSource.tenant_id == tenant_id
+        ).first()
+        
+        if source:
+            source.sync_status = sync_status
+            source.chunk_count = chunk_count
+            self.session.commit()
+        return source
+    
+    # ========== VECTOR EMBEDDING OPERATIONS ==========
+    
+    def add_vector_embedding(
+        self,
+        tenant_id: uuid.UUID,
+        source_id: uuid.UUID,
+        content_payload: str,
+        metadata: dict = None,
+        embedding_vector: str = None
+    ) -> VectorEmbedding:
+        """Add a new vector embedding chunk (tenant-isolated)."""
+        embedding = VectorEmbedding(
+            tenant_id=tenant_id,
+            source_id=source_id,
+            content_payload=content_payload,
+            metadata=metadata,
+            embedding_vector=embedding_vector
+        )
+        self.session.add(embedding)
+        self.session.commit()
+        return embedding
+    
+    def get_tenant_embeddings(self, tenant_id: uuid.UUID) -> List[VectorEmbedding]:
+        """Retrieve all embeddings for a tenant (tenant-isolated)."""
+        return self.session.query(VectorEmbedding).filter(VectorEmbedding.tenant_id == tenant_id).all()
+    
+    def get_embeddings_by_source(self, source_id: uuid.UUID, tenant_id: uuid.UUID) -> List[VectorEmbedding]:
+        """Retrieve embeddings for a specific source within a tenant (double-filtered for safety)."""
+        return self.session.query(VectorEmbedding).filter(
+            VectorEmbedding.source_id == source_id,
+            VectorEmbedding.tenant_id == tenant_id
+        ).all()
+    
+    # ========== INTERACTION LOG OPERATIONS ==========
+    
+    def log_interaction(
+        self,
+        tenant_id: uuid.UUID,
+        customer_id: str,
+        input_message: str,
+        output_message: str = None,
+        agent_chain: str = None,
+        escalated: bool = False,
+        escalation_reason: str = None
+    ) -> InteractionLog:
+        """Log a customer interaction (tenant-isolated)."""
+        log = InteractionLog(
+            tenant_id=tenant_id,
+            customer_id=customer_id,
+            input_message=input_message,
+            output_message=output_message,
+            agent_chain=agent_chain,
+            escalated=escalated,
+            escalation_reason=escalation_reason
+        )
+        self.session.add(log)
+        self.session.commit()
+        return log
+    
+    def get_tenant_interactions(self, tenant_id: uuid.UUID, limit: int = 100) -> List[InteractionLog]:
+        """Retrieve recent interactions for a tenant (tenant-isolated)."""
+        return self.session.query(InteractionLog).filter(
+            InteractionLog.tenant_id == tenant_id
+        ).order_by(InteractionLog.timestamp.desc()).limit(limit).all()
+    
+    def get_customer_interactions(self, tenant_id: uuid.UUID, customer_id: str) -> List[InteractionLog]:
+        """Retrieve all interactions for a specific customer within a tenant (double-filtered)."""
+        return self.session.query(InteractionLog).filter(
+            InteractionLog.tenant_id == tenant_id,
+            InteractionLog.customer_id == customer_id
+        ).order_by(InteractionLog.timestamp.desc()).all()
+
+
+@contextmanager
+def get_db_session():
+    """
+    Context manager for database sessions.
+    
+    Usage:
+        with get_db_session() as db:
+            config = db.get_tenant_config(tenant_id)
+    """
+    session = SessionLocal()
+    try:
+        yield TenantAwareDB(session)
+    finally:
+        session.close()
+
+
+def initialize_database():
+    """Create all tables if they don't exist."""
+    create_all_tables(engine)
+    print("✓ Database tables initialized.")
+
+
+# Auto-initialize tables on import
+try:
+    initialize_database()
+except Exception as e:
+    print(f"⚠ Database initialization warning: {e}")

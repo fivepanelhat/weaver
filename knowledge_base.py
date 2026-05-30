@@ -1,0 +1,160 @@
+import json
+import uuid
+import math
+from typing import Any, Dict, List, Optional, Sequence, Tuple
+
+from models import VectorEmbedding
+
+
+def serialize_embedding(embedding: Sequence[float]) -> str:
+    return json.dumps([float(x) for x in embedding])
+
+
+def deserialize_embedding(serialized: Optional[str]) -> Optional[List[float]]:
+    if not serialized:
+        return None
+    try:
+        decoded = json.loads(serialized)
+        return [float(x) for x in decoded]
+    except (ValueError, TypeError):
+        return None
+
+
+def cosine_similarity(a: Sequence[float], b: Sequence[float]) -> float:
+    if not a or not b or len(a) != len(b):
+        return 0.0
+    dot = sum(x * y for x, y in zip(a, b))
+    norm_a = math.sqrt(sum(x * x for x in a))
+    norm_b = math.sqrt(sum(y * y for y in b))
+    if norm_a == 0 or norm_b == 0:
+        return 0.0
+    return dot / (norm_a * norm_b)
+
+
+class EmbeddingService:
+    """Base interface for text embedding services."""
+
+    def embed(self, text: str) -> List[float]:
+        raise NotImplementedError
+
+
+class HashEmbeddingService(EmbeddingService):
+    """Deterministic lightweight embedding service for POC and demos."""
+
+    def embed(self, text: str) -> List[float]:
+        counts = [0.0] * 64
+        for ch in text.lower():
+            counts[ord(ch) % len(counts)] += 1.0
+        norm = math.sqrt(sum(x * x for x in counts))
+        return [x / norm if norm else 0.0 for x in counts]
+
+
+class KnowledgeBaseClient:
+    """Tenant-aware knowledge base client abstraction."""
+
+    def query(self, text: str, tenant_id: str, top_k: int = 5) -> List[Dict[str, Any]]:
+        raise NotImplementedError
+
+    def add_document(self, tenant_id: str, content: str, metadata: Dict[str, Any] = None) -> None:
+        raise NotImplementedError
+
+
+class InMemoryKnowledgeBaseClient(KnowledgeBaseClient):
+    """Simple tenant-isolated in-memory knowledge base client."""
+
+    def __init__(self, embedder: EmbeddingService):
+        self.embedder = embedder
+        self._chunks: List[Dict[str, Any]] = []
+
+    def add_document(self, tenant_id: str, content: str, metadata: Dict[str, Any] = None) -> None:
+        self._chunks.append({
+            "tenant_id": tenant_id,
+            "content": content,
+            "metadata": metadata or {},
+            "vector": self.embedder.embed(content),
+        })
+
+    def query(self, text: str, tenant_id: str, top_k: int = 5) -> List[Dict[str, Any]]:
+        query_vector = self.embedder.embed(text)
+        candidates: List[Tuple[float, Dict[str, Any]]] = []
+
+        for chunk in self._chunks:
+            if chunk["tenant_id"] != tenant_id:
+                continue
+            score = cosine_similarity(query_vector, chunk["vector"])
+            candidates.append((score, chunk))
+
+        candidates.sort(key=lambda item: item[0], reverse=True)
+        return [
+            {
+                "content": chunk["content"],
+                "metadata": chunk["metadata"],
+                "score": score,
+            }
+            for score, chunk in candidates[:top_k]
+        ]
+
+
+class SqlAlchemyKnowledgeBaseClient(KnowledgeBaseClient):
+    """DB-backed tenant-aware knowledge base client for SQLAlchemy models."""
+
+    def __init__(self, db, embedder: EmbeddingService):
+        self.db = db
+        self.embedder = embedder
+
+    def add_document(self, tenant_id: str, content: str, metadata: Dict[str, Any] = None) -> None:
+        source_id = getattr(metadata, "source_id", None) or metadata.get("source_id") if metadata else None
+
+        # If embedder supports batch embed_and_store (sovereign engines), use it
+        if hasattr(self.embedder, "embed_and_store"):
+            processed_chunks = [{
+                "chunk_id": str(uuid.uuid4()),
+                "source_id": source_id,
+                "tenant_id": tenant_id,
+                "content_payload": content,
+                "metadata": metadata or {},
+            }]
+            ready_records = self.embedder.embed_and_store(processed_chunks)
+            for rec in ready_records:
+                # rec may contain embedding as list
+                embedding_vec = rec.get("embedding")
+                serialized = serialize_embedding(embedding_vec) if embedding_vec is not None else None
+                self.db.add_vector_embedding(
+                    tenant_id=tenant_id,
+                    source_id=rec.get("source_id") or source_id,
+                    content_payload=rec.get("content_payload") or content,
+                    metadata=rec.get("metadata", {}) or (metadata or {}),
+                    embedding_vector=serialized,
+                )
+            return
+
+        # Fallback: single-item embed
+        self.db.add_vector_embedding(
+            tenant_id=tenant_id,
+            source_id=source_id,
+            content_payload=content,
+            metadata=metadata or {},
+            embedding_vector=serialize_embedding(self.embedder.embed(content)),
+        )
+
+    def query(self, text: str, tenant_id: str, top_k: int = 5) -> List[Dict[str, Any]]:
+        query_vector = self.embedder.embed(text)
+        rows = self.db.get_tenant_embeddings(tenant_id)
+        scored: List[Tuple[float, VectorEmbedding]] = []
+
+        for row in rows:
+            embedding = deserialize_embedding(row.embedding_vector)
+            if embedding is None:
+                continue
+            score = cosine_similarity(query_vector, embedding)
+            scored.append((score, row))
+
+        scored.sort(key=lambda item: item[0], reverse=True)
+        return [
+            {
+                "content": row.content_payload,
+                "metadata": row.embedding_metadata,
+                "score": score,
+            }
+            for score, row in scored[:top_k]
+        ]

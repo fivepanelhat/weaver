@@ -1,0 +1,119 @@
+# Master Context Report: Sovereign Agentic Architecture
+
+## 1. Executive Summary
+
+This document serves as the primary foundational context for the development of a localized, multi-agent AI architecture designed as a **white-label, industry-agnostic platform**. The initial pilot deployment targets Mana Kai and Byte Size Kai (agricultural use case), but the architecture is engineered for rapid customization across any industry or business vertical. The objective is to transition from strategic scaffolding to code execution in VS Code. The core focus is on deploying a self-optimizing, Sovereign AI ecosystem that remains on-premise to ensure complete data sovereignty, localized governance, and environmental resilience.
+
+## 1.1 Summary Highlights
+
+- **Sovereign edge-first design:** All compute and data remain on-premise using a Raspberry Pi 5 with AI Top Hat acceleration.
+- **Agentic coordination:** Modular agents handle sensing, analysis, optimization, alerting, and digital twin synchronization.
+- **Hybrid communication:** MQTT is the backbone for pub/sub messaging, with REST/gRPC for synchronous exchange and persistent state stored locally.
+- **Governance alignment:** The architecture is built to support indigenous data sovereignty and responsible AI principles through localized control and community-aware frameworks.
+- **Developer workflow:** VS Code is the central environment, with Python, Node.js, Flutter, Docker, and LLM-assisted tools for rapid, portable execution.
+
+## 2. Organizational Ecosystem
+
+- **Coastal Alpine Tech Limited:** The overarching sovereign AI venture studio. It serves as the architectural brains trust, building secure, decentralized, and locally hosted AI solutions for **any industry**. The platform is designed as a white-label, multi-tenant system that can be rapidly deployed and customized for diverse business verticals.
+- **Mana Kai (Horowhenua Mana Kai Project):** The **initial pilot use case** — a physical, community-grounded food sovereignty initiative focused on practical, hands-on local food production and building community resilience.
+- **Byte Size Kai:** The **digital twin** of Mana Kai, demonstrating how the agentic architecture can be deployed for agricultural monitoring and optimization. This proof-of-concept validates the customization patterns for other industries.
+
+## 2.1 Industry Customization
+
+The same agentic core is designed to serve:
+- **Trades & Services:** Plumbing, electrical, HVAC (customer support, quote generation, scheduling)
+- **Retail & E-commerce:** Customer service, inventory optimization, demand forecasting
+- **Manufacturing:** Production optimization, quality control, supply chain monitoring
+- **Healthcare:** Patient intake, appointment scheduling, compliance tracking
+- **Hospitality:** Guest services, booking management, feedback analysis
+- **And more:** Any business with domain-specific knowledge, customer interactions, or operational workflows.
+
+The customization happens via `tenant_configs`, `knowledge_sources`, and industry-specific prompt templates — no architectural rewrites needed.
+
+## 3. The Sovereign Stack: Hardware & Infrastructure (Scalable & Customizable)
+
+The architecture adheres to a sovereign, localized computing model. Data processing happens at the edge, and the hardware stack is **flexible and customizable** based on business requirements.
+
+**Mana Kai/Byte Size Kai Configuration:**
+- **Primary Compute Node:** Raspberry Pi 5 (16GB) serving as the on-premise IoT Hub.
+- **AI Hardware Acceleration:** AI Top Hat integrated with the Raspberry Pi for local model inference.
+- **Sensor Network:** ESP32 microcontrollers and IoT sensors collecting real-time environmental data from the microgreen setups.
+- **Networking:** MQTT brokers handling lightweight, high-throughput telemetry data from the garden sensors to the local hub.
+
+**Customizable Alternatives (Other Industries):**
+- Lightweight servers (Intel NUC, Jetson Nano) for business offices or retail locations
+- Edge clusters for manufacturing floor monitoring
+- Multi-node setups for scaled operations
+- Cloud-agnostic: can run on any on-premise hardware or private cloud infrastructure
+
+The key principle: **no data leaves the tenant's network** unless explicitly configured. All models run locally or on private infrastructure.
+
+## 4. Software & Development Environment (Industry-Agnostic Stack)
+
+The development workflow leverages a modern, multimodal tech stack centered around VS Code. This stack is **not specific to agriculture** — it's engineered for rapid adaptation to any industry vertical.
+
+**Core Languages & Frameworks:**
+- **Python:** Data pipelines, IoT integration, local LLM orchestration, business logic automation, analytics.
+- **Node.js:** Backend services, API routing, event-driven architectures, webhook handling, workflow orchestration.
+- **Flutter:** Cross-platform frontend UI/dashboard for real-time monitoring, alerts, and management (works for ag sensors, support tickets, inventory, etc.).
+- **Docker:** Containerizing the sovereign OS, ensuring agentic workflows are modular, secure, and deployable across any on-premise hardware.
+- **Database:** PostgreSQL (relational core) + Milvus/pgvector (semantic embeddings) for multi-tenant data isolation.
+
+**AI Integration Tools:**
+- **Gemini CLI and Claude VS Code plugins:** For inline code generation and architectural assistance.
+- **Ollama:** Local LLM inference (no cloud dependency).
+- **MQTT.js / Paho-MQTT:** Lightweight pub/sub for agent coordination (agnostic to industry).
+
+**Key Flexibility:** The tech stack remains identical across all industry deployments. Customization happens at the configuration and prompt layer, not the infrastructure layer.
+
+## 5. Agentic Architecture Design ("The Platinum Standard" — Industry-Agnostic)
+
+The system is built on a consolidated "Platinum Standard" framework, integrating robust workflow automation with highly capable, autonomous agents. This framework is **intentionally decoupled from domain-specific logic**.
+
+**Core Agent Patterns (Customizable Across Industries):**
+- **Intake Agent:** Classifies requests, extracts context, routes to appropriate specialist. Works for customer questions, sensor alerts, form submissions, or support tickets.
+- **Fulfillment Agent:** Executes tasks (order processing, resource allocation, system adjustments). Highly configurable via `tenant_configs`.
+- **Resolution Agent:** Handles edge cases, troubleshooting, escalations. Maintains audit logs for compliance.
+- **Data Ingestion Agent:** Collects and normalizes inputs (sensors, webhooks, files, databases). Schema-agnostic.
+- **Orchestrator Agent:** Coordinates multi-agent workflows, state management, resilience.
+
+**Data Sovereignty & Multi-Tenancy:**
+- All data remains localized and tenant-isolated (see multi-tenant database schema).
+- Culturally sensitive data and critical operational metrics are protected via role-based access and DAO governance (when applicable).
+- Supports indigenous data sovereignty principles and responsible AI alignment.
+
+**System Loop (Mana Kai Example; Generalizes to Any Business):**
+  1. **Input Sources** collect domain data (IoT sensors, customer messages, business systems).
+  2. Data is routed via MQTT to the local hub (or REST for synchronous requests).
+  3. **Intake Agent** classifies and enriches the data against business context and rules.
+  4. **Fulfillment Agents** process tasks (watering, refunds, scheduling, etc.) based on learned patterns and escalation rules.
+  5. Alerts and results are published and reflected in the UI dashboard.
+
+**Customization Points for Any Industry:**
+- `brand_voice` and `escalation_rules` in `tenant_configs`
+- Domain-specific embeddings and RAG sources in `knowledge_sources`
+- Custom agent personas and task definitions
+- Industry-specific prompt templates
+- Webhook integrations for legacy systems
+
+See the "White-Label Customization Patterns" document for detailed examples across industries.
+
+## 6. Usage Guidance (White-Label Reference)
+
+Use this document as the primary reference when building future agents for **any industry or business vertical**. The Mana Kai/Byte Size Kai implementation serves as the proof-of-concept and initial deployment, demonstrating the customization patterns for other industries.
+
+To adapt the architecture for a new business:
+1. Define the new `tenant_configs` (brand voice, escalation rules, active channels).
+2. Ingest domain-specific knowledge into `knowledge_sources` (PDFs, FAQs, policies, product catalogs, etc.).
+3. Map the agent workflow to business processes (not engineering or agriculture concepts).
+4. Deploy using the same containerized stack, no architectural changes.
+
+**Starter prompt for any industry:**
+
+"I am building a customizable, white-label agentic architecture for [industry/use case] as part of Coastal Alpine Tech. The platform is engineered for data sovereignty and runs entirely on-premise. The initial pilot is Mana Kai (agricultural monitoring), but the system is designed to serve any business vertical. Please use the Agentic Architecture context as foundational context and help me tailor it for [specific business requirements]."
+
+**Example adaptations (see "White-Label Customization Patterns" for detail):**
+- **Plumbing/Trades:** Intake → quote generation → job dispatch → completion logging
+- **Retail:** Intake → inventory check → order fulfillment → customer follow-up
+- **Manufacturing:** Data ingestion → quality analysis → resource optimization → anomaly alerts
+- **Healthcare:** Patient intake → appointment scheduling → compliance tracking → audit logging
