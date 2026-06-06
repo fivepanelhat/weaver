@@ -1,4 +1,4 @@
-# Gemini Agents | AI-Native Sovereign Mesh
+# Weaver Agents | AI-Native Sovereign Mesh
 
 This repository houses **Gemini Agents**, a white-label, multi-tenant AI helpdesk scaffold engineered by Coastal Alpine Tech Limited. It features tenant-aware routing, isolated knowledge retrieval, and a modular local `langgraph` orchestration layer built to keep operational data secure and independent.
 
