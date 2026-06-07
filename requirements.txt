@@ -2,4 +2,4 @@ SQLAlchemy
 psycopg2-binary
 langchain-text-splitters
 langchain-community
-coastal-alpine-core @ git+https://github.com/fivepanelhat/coastal-alpine-core.git
+coastal-alpine-core @ git+https://github.com/fivepanelhat/coastal-alpine-core.git@v0.1.0
