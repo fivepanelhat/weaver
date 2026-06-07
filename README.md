@@ -1,11 +1,15 @@
 # Weaver: AI-Native Multi-Tenant Agentic Mesh
 
+![Weaver Banner](assets/social_preview.png)
+
 **Coastal Alpine Tech Limited**  
 *Edge AI | Sovereign Systems | Practical Intelligence*
 
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)  
-[![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)  
-[![Hardware](https://img.shields.io/badge/Hardware-Edge_Deployment-orange.svg)]()  
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)  
+[![Python: 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)  
+[![Hardware: Edge AI](https://img.shields.io/badge/Hardware-Raspberry%20Pi%205%20%2B%20NPU-orange.svg)]()  
+[![Sovereignty: Offline Native](https://img.shields.io/badge/Sovereignty-Offline%20Native-green.svg)]()  
+[![CI/CD: Active](https://github.com/fivepanelhat/weaver/actions/workflows/ci.yml/badge.svg)](https://github.com/fivepanelhat/weaver/actions)
 
 White-label multi-tenant AI helpdesk scaffold with isolated knowledge retrieval and local LangGraph orchestration.
 
@@ -58,7 +62,7 @@ git clone https://github.com/fivepanelhat/weaver.git
 cd weaver
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -e ../coastal_alpine_core
+pip install git+https://github.com/fivepanelhat/coastal-alpine-core.git
 pip install -r requirements.txt
 pip install -r requirements-dev.txt
 cp .env.example .env
@@ -83,7 +87,7 @@ pytest
 
 ```mermaid
 flowchart TD
-    A[User Request] --> B[Orchestrator (LangGraph)]
+    A[User Request] --> B["Orchestrator (LangGraph)"]
     B --> C[Intake Agent]
     B --> D[Fulfilment Agent]
     B --> E[Resolution Agent]
