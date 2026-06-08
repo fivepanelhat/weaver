@@ -1,6 +1,7 @@
 import json
 import asyncio
-from asyncua import Client
+# pyrefly: ignore [missing-import]
+from asyncio import Client
 from paho.mqtt import client as mqtt_client
 
 OPC_UA_SERVER_URL = "opc.tcp://1192.168.1.250:4840" # Typical local industrial PLC address
