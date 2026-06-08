@@ -6,7 +6,7 @@ This document serves as the primary foundational context for the development of 
 
 ## 1.1 Summary Highlights
 
-- **Sovereign edge-first design:** All compute and data remain on-premise using a Raspberry Pi 5 with AI Top Hat acceleration.
+- **Sovereign edge-first design:** All compute and data remain on-premise using a Raspberry Pi 5 with Hailo-10H NPU acceleration.
 - **Agentic coordination:** Modular agents handle sensing, analysis, optimization, alerting, and digital twin synchronization.
 - **Hybrid communication:** MQTT is the backbone for pub/sub messaging, with REST/gRPC for synchronous exchange and persistent state stored locally.
 - **Governance alignment:** The architecture is built to support indigenous data sovereignty and responsible AI principles through localized control and community-aware frameworks.
@@ -36,7 +36,7 @@ The architecture adheres to a sovereign, localized computing model. Data process
 
 **Mana Kai/Byte Size Kai Configuration:**
 - **Primary Compute Node:** Raspberry Pi 5 (16GB) serving as the on-premise IoT Hub.
-- **AI Hardware Acceleration:** AI Top Hat integrated with the Raspberry Pi for local model inference.
+- **AI Hardware Acceleration:** Hailo-10H NPU integrated with the Raspberry Pi for local model inference.
 - **Sensor Network:** ESP32 microcontrollers and IoT sensors collecting real-time environmental data from the microgreen setups.
 - **Networking:** MQTT brokers handling lightweight, high-throughput telemetry data from the garden sensors to the local hub.
 
