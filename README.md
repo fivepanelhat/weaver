@@ -10,7 +10,8 @@
 [![Hardware: Edge AI](https://img.shields.io/badge/Hardware-Raspberry%20Pi%205%20%2B%20Hailo--10H%20NPU-orange.svg)]()  
 [![Sovereignty: Offline Native](https://img.shields.io/badge/Sovereignty-Offline%20Native-green.svg)]()  
 [![CI/CD: Active](https://github.com/fivepanelhat/weaver/actions/workflows/ci.yml/badge.svg)](https://github.com/fivepanelhat/weaver/actions)  
-[![SecOps Scan](https://img.shields.io/github/actions/workflow/status/fivepanelhat/weaver/security-scan.yml?branch=main&label=SecOps%20Scan&style=flat-square&color=success)](https://github.com/fivepanelhat/weaver/actions/workflows/security-scan.yml)
+[![SecOps Scan](https://img.shields.io/github/actions/workflow/status/fivepanelhat/weaver/security-scan.yml?branch=main&label=SecOps%20Scan&style=flat-square&color=success)](https://github.com/fivepanelhat/weaver/actions/workflows/security-scan.yml)  
+[![Dependabot](https://img.shields.io/badge/Dependencies-Monitored-brightgreen?style=flat-square&logo=dependabot)]()
 
 White-label multi-tenant AI helpdesk scaffold with isolated knowledge retrieval and local LangGraph orchestration.
 
