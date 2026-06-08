@@ -31,9 +31,16 @@ def on_message(client, userdata, msg):
 
 def run_harvester():
     print("[INIT] Starting Sovereign Black Box logging service...")
-    client = mqtt_client.Client(callback_api_version=mqtt_client.CallbackAPIVersion.VERSION2)
+    try:
+        # paho-mqtt v2.x syntax
+        client = mqtt_client.Client(callback_api_version=mqtt_client.CallbackAPIVersion.VERSION2)
+    except AttributeError:
+        # Fallback to paho-mqtt v1.x syntax
+        client = mqtt_client.Client()
+        
     client.on_connect = on_connect
     client.on_message = on_message
+
 
     try:
         client.connect(BROKER, PORT, keepalive=60)

@@ -12,7 +12,13 @@ MESSAGES_PER_NODE = 100
 
 def simulate_node(node_id):
     client_id = f'stress-node-{node_id}'
-    client = mqtt_client.Client(client_id=client_id, callback_api_version=mqtt_client.CallbackAPIVersion.VERSION2)
+    try:
+        # paho-mqtt v2.x syntax
+        client = mqtt_client.Client(client_id=client_id, callback_api_version=mqtt_client.CallbackAPIVersion.VERSION2)
+    except AttributeError:
+        # Fallback to paho-mqtt v1.x syntax
+        client = mqtt_client.Client(client_id=client_id)
+
     
     try:
         client.connect(BROKER, PORT, keepalive=60)
