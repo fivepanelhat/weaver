@@ -72,7 +72,7 @@ cp .env.example .env
 
 Ensure Ollama is running locally and pull the target model:
 ```bash
-ollama pull gemma4:latest
+ollama pull gemma4:e4b
 python demo.py
 ```
 
