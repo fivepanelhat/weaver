@@ -2,6 +2,12 @@
 
 All notable changes to the `weaver` repository will be documented in this file.
 
+## [1.2.0] - 2026-06-08
+
+### Added
+- Unified version bump alignment.
+- Structured pre-commit hooks.
+
 ## [1.0.0] - 2026-06-07
 
 ### Added
