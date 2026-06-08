@@ -175,13 +175,12 @@ weaver/
 - [agent_knowledge_base/platform_runbook.md](./agent_knowledge_base/platform_runbook.md)
 - [agent_knowledge_base/ethics_review_playbook.md](./agent_knowledge_base/ethics_review_playbook.md)
 - [CHANGELOG.md](./CHANGELOG.md)
-- [CONTRIBUTING.md](./CONTRIBUTING.md)
 
 ---
 
-## Contributing
+## License
 
-Contributions welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md).
+This project is Licensed under the Coastal Alpine Tech Limited License. See `LICENSE` for details.
 
 ---
 
