@@ -11,7 +11,7 @@
 [![NPU Acceleration](https://img.shields.io/badge/NPU-Hailo--10H%20Accelerated-005A9C?style=flat-square)]()  
 [![Sovereignty](https://img.shields.io/badge/Sovereignty-NZ%20Data%20Bound-00247D?style=flat-square)]()  
 [![CI/CD: Active](https://github.com/fivepanelhat/weaver/actions/workflows/ci.yml/badge.svg)](https://github.com/fivepanelhat/weaver/actions)  
-[![SecOps Scan](https://img.shields.io/github/actions/workflow/status/fivepanelhat/weaver/security-scan.yml?branch=main&label=SecOps%20Scan&style=flat-square&color=success)](https://github.com/fivepanelhat/weaver/actions/workflows/security-scan.yml)  
+[![SecOps Scan](https://img.shields.io/github/actions/workflow/status/fivepanelhat/weaver/secops.yml?branch=main&label=SecOps%20Scan&style=flat-square&color=success)](https://github.com/fivepanelhat/weaver/actions/workflows/secops.yml)  
 [![Dependabot](https://img.shields.io/badge/Dependencies-Monitored-brightgreen?style=flat-square&logo=dependabot)]()  
 [![Sustainability](https://img.shields.io/badge/EECA%20NZ-Carbon%20Tracked-green?style=flat-square)]()
 
