@@ -4,6 +4,8 @@ import operator
 from langgraph.graph import StateGraph, END
 
 # 1. Define the Agnostic State
+
+
 class HelpdeskState(TypedDict):
     tenant_id: str
     brand_voice: str
@@ -18,21 +20,24 @@ def agnostic_intake_node(state: HelpdeskState, *args, **kwargs):
     """
     Frontline agent: retrieves tenant-specific context and categorizes intent.
     """
-    print(f"\n--- [Node: Intake] Triggered for Tenant: {state['tenant_id']} ---")
+    print(
+        f"\n--- [Node: Intake] Triggered for Tenant: {state['tenant_id']} ---")
 
     # Scaffold for multi-tenant vector query
-    # results = vector_db.search(query=state['user_message'], filter={"tenant_id": state['tenant_id']})
+    # results = vector_db.search(
+    #     query=state['user_message'], filter={"tenant_id": state['tenant_id']})
     # context_str = "\n".join([res.payload for res in results])
     context_str = "Simulated retrieval: Custom cut piping is strictly non-refundable."
 
-    # Scaffold for local LLM inference
-    system_prompt = f"""
-    Brand Voice: {state['brand_voice']}
-    Context: {context_str}
-    Rules: {state['escalation_rules']}
-    """
+    # Scaffold for local LLM inference (inject brand_voice / rules via prompt)
+    # system_prompt = f"""
+    #     Brand Voice: {state['brand_voice']}
+    #     Context: {context_str}
+    #     Rules: {state['escalation_rules']}
+    # """
 
-    if "angry" in state['user_message'].lower() or "refund" in state['user_message'].lower():
+    if "angry" in state['user_message'].lower(
+    ) or "refund" in state['user_message'].lower():
         next_step = "escalation"
         response_text = "I understand you need a refund. Let me get a human manager."
     else:
@@ -48,14 +53,17 @@ def agnostic_intake_node(state: HelpdeskState, *args, **kwargs):
 
 def fulfilment_node(state: HelpdeskState, *args, **kwargs):
     """Handles standard operational tasks (e.g., checking order DBs)."""
-    print(f"--- [Node: Fulfilment] Executing for Tenant: {state['tenant_id']} ---")
+    print(
+        f"--- [Node: Fulfilment] Executing for Tenant: {state['tenant_id']} ---")
     return {"conversation_history": ["AI: Fulfilment task complete."]}
 
 
 def escalation_node(state: HelpdeskState, *args, **kwargs):
     """Pushes complex or rule-breaking queries to a human queue."""
-    print(f"--- [Node: Escalation] Alerting Human for Tenant: {state['tenant_id']} ---")
-    return {"conversation_history": ["System: Ticket escalated to human support."]}
+    print(
+        f"--- [Node: Escalation] Alerting Human for Tenant: {state['tenant_id']} ---")
+    return {"conversation_history": [
+        "System: Ticket escalated to human support."]}
 
 
 # 3. Building the Directed Graph

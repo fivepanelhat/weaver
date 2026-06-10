@@ -52,10 +52,12 @@ class HashEmbeddingService(EmbeddingService):
 class KnowledgeBaseClient:
     """Tenant-aware knowledge base client abstraction."""
 
-    def query(self, text: str, tenant_id: str, top_k: int = 5) -> List[Dict[str, Any]]:
+    def query(self, text: str, tenant_id: str,
+              top_k: int = 5) -> List[Dict[str, Any]]:
         raise NotImplementedError
 
-    def add_document(self, tenant_id: str, content: str, metadata: Dict[str, Any] = None) -> None:
+    def add_document(self, tenant_id: str, content: str,
+                     metadata: Dict[str, Any] = None) -> None:
         raise NotImplementedError
 
 
@@ -66,7 +68,8 @@ class InMemoryKnowledgeBaseClient(KnowledgeBaseClient):
         self.embedder = embedder
         self._chunks: List[Dict[str, Any]] = []
 
-    def add_document(self, tenant_id: str, content: str, metadata: Dict[str, Any] = None) -> None:
+    def add_document(self, tenant_id: str, content: str,
+                     metadata: Dict[str, Any] = None) -> None:
         self._chunks.append({
             "tenant_id": tenant_id,
             "content": content,
@@ -74,7 +77,8 @@ class InMemoryKnowledgeBaseClient(KnowledgeBaseClient):
             "vector": self.embedder.embed(content),
         })
 
-    def query(self, text: str, tenant_id: str, top_k: int = 5) -> List[Dict[str, Any]]:
+    def query(self, text: str, tenant_id: str,
+              top_k: int = 5) -> List[Dict[str, Any]]:
         query_vector = self.embedder.embed(text)
         candidates: List[Tuple[float, Dict[str, Any]]] = []
 
@@ -102,10 +106,13 @@ class SqlAlchemyKnowledgeBaseClient(KnowledgeBaseClient):
         self.db = db
         self.embedder = embedder
 
-    def add_document(self, tenant_id: str, content: str, metadata: Dict[str, Any] = None) -> None:
-        source_id = getattr(metadata, "source_id", None) or metadata.get("source_id") if metadata else None
+    def add_document(self, tenant_id: str, content: str,
+                     metadata: Dict[str, Any] = None) -> None:
+        source_id = getattr(metadata, "source_id", None) or metadata.get(
+            "source_id") if metadata else None
 
-        # If embedder supports batch embed_and_store (sovereign engines), use it
+        # If embedder supports batch embed_and_store (sovereign engines), use
+        # it
         if hasattr(self.embedder, "embed_and_store"):
             processed_chunks = [{
                 "chunk_id": str(uuid.uuid4()),
@@ -118,7 +125,8 @@ class SqlAlchemyKnowledgeBaseClient(KnowledgeBaseClient):
             for rec in ready_records:
                 # rec may contain embedding as list
                 embedding_vec = rec.get("embedding")
-                serialized = serialize_embedding(embedding_vec) if embedding_vec is not None else None
+                serialized = serialize_embedding(
+                    embedding_vec) if embedding_vec is not None else None
                 self.db.add_vector_embedding(
                     tenant_id=tenant_id,
                     source_id=rec.get("source_id") or source_id,
@@ -137,7 +145,8 @@ class SqlAlchemyKnowledgeBaseClient(KnowledgeBaseClient):
             embedding_vector=serialize_embedding(self.embedder.embed(content)),
         )
 
-    def query(self, text: str, tenant_id: str, top_k: int = 5) -> List[Dict[str, Any]]:
+    def query(self, text: str, tenant_id: str,
+              top_k: int = 5) -> List[Dict[str, Any]]:
         query_vector = self.embedder.embed(text)
         rows = self.db.get_tenant_embeddings(tenant_id)
         scored: List[Tuple[float, VectorEmbedding]] = []

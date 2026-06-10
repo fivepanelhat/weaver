@@ -34,27 +34,38 @@ def main():
 
     kb_client.add_document(
         tenant_id,
-        "Our return policy allows customers to return non-damaged goods within 30 days for a full refund.",
-        metadata={"source": "Retail Policy", "topic": "returns"},
+        "Our return policy allows customers to return non-damaged goods "
+        "within 30 days for a full refund.",
+        metadata={
+            "source": "Retail Policy",
+            "topic": "returns"},
     )
     kb_client.add_document(
         tenant_id,
-        "Our support team can escalate urgent requests to a human advisor if the customer message contains anger or safety concerns.",
-        metadata={"source": "Escalation Policy", "topic": "escalation"},
+        "Our support team can escalate urgent requests to a human advisor "
+        "if the customer message contains anger or safety concerns.",
+        metadata={
+            "source": "Escalation Policy",
+            "topic": "escalation"},
     )
 
     orchestrator = AgentOrchestrator(
         tenant_id=tenant_id,
         tenant_config={
             "brand_voice": "Professional, empathetic, and customer-centric.",
-            "escalation_rules": {"require_human_for": "angry_sentiment"},
-            "custom_instructions": "Keep responses short and grounded in the tenant's documented policies.",
+            "escalation_rules": {
+                "require_human_for": "angry_sentiment"},
+            "custom_instructions": (
+                "Keep responses short and grounded "
+                "in the tenant's documented policies."
+            ),
         },
         knowledge_base_client=kb_client,
     )
 
     message = {
-        "id": str(uuid.uuid4()),
+        "id": str(
+            uuid.uuid4()),
         "tenant_id": tenant_id,
         "customer_id": "CUST-1001",
         "customer_name": "Ava",

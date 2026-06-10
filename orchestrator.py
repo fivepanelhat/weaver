@@ -11,7 +11,11 @@ class InMemoryMemoryStore:
     def __init__(self):
         self.store: Dict[str, Dict[str, Any]] = {}
 
-    def update_context(self, interaction_id: str, customer_profile: Dict[str, Any], classification: str) -> None:
+    def update_context(self,
+                       interaction_id: str,
+                       customer_profile: Dict[str,
+                                              Any],
+                       classification: str) -> None:
         self.store[interaction_id] = {
             "customer_profile": customer_profile,
             "classification": classification,
@@ -51,7 +55,8 @@ class AgentOrchestrator:
         self.tenant_id = tenant_id
         self.tenant_config = tenant_config or {}
         self.memory_store = memory_store or InMemoryMemoryStore()
-        self.kb_client = knowledge_base_client or InMemoryKnowledgeBaseClient(HashEmbeddingService())
+        self.kb_client = knowledge_base_client or InMemoryKnowledgeBaseClient(
+            HashEmbeddingService())
         self.crm_client = NoOpCRM()
         self.llm_pool = NoOpLLMPool()
         self.telemetry_logger = NoOpTelemetryLogger()
@@ -81,7 +86,9 @@ class AgentOrchestrator:
                 order_db=None,
                 llm_pool=self.llm_pool,
                 tenant_id=self.tenant_id,
-                escalation_rules=self.tenant_config.get("escalation_rules", {}),
+                escalation_rules=self.tenant_config.get(
+                    "escalation_rules",
+                    {}),
             )
             return agent.execute_task({"intent": "process_order", **context})
 
@@ -91,7 +98,8 @@ class AgentOrchestrator:
                 escalation_queue=self.escalation_queue,
                 tenant_id=self.tenant_id,
             )
-            return agent.handle_issue({"issue_id": str(uuid.uuid4()), **context})
+            return agent.handle_issue(
+                {"issue_id": str(uuid.uuid4()), **context})
 
         return {"status": "unknown_target", "target_agent": target}
 
@@ -102,7 +110,8 @@ def build_sample_orchestrator() -> AgentOrchestrator:
         tenant_id="tenant-demo",
         tenant_config={
             "brand_voice": "Friendly, concise and professional.",
-            "escalation_rules": {"require_human_for": "high_risk"},
+            "escalation_rules": {
+                "require_human_for": "high_risk"},
             "custom_instructions": "Always cite the tenant knowledge base and avoid speculation.",
         },
         knowledge_base_client=kb_client,

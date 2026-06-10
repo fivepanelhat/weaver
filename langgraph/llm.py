@@ -1,5 +1,5 @@
 """Local LLM wrapper with Ollama support and a deterministic fallback."""
-from typing import Optional
+
 
 try:
     from langchain_community.llms import Ollama
@@ -26,7 +26,8 @@ class LocalSovereignLLM:
             except Exception:
                 pass
 
-        # deterministic fallback: return ESCALATE if 'anger' or 'safety' in prompt
+        # deterministic fallback: return ESCALATE if 'anger' or 'safety' in
+        # prompt
         lower = prompt.lower()
         if "anger" in lower or "safety" in lower or "escalate" in lower:
             return "ESCALATE"

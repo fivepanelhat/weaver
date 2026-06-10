@@ -12,7 +12,11 @@ Models:
 - VectorEmbedding: Vector store entries (linked to KnowledgeSource)
 """
 
-from sqlalchemy import create_engine, Column, String, Text, TIMESTAMP, UUID, ForeignKey, Integer, Boolean, JSON
+from sqlalchemy import (
+    create_engine, Column, String, Text, TIMESTAMP,
+    ForeignKey, Integer, Boolean,
+)
+
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.dialects.postgresql import UUID as PGUUID, JSONB
@@ -28,21 +32,43 @@ class Tenant(Base):
     Every interaction, configuration, and piece of knowledge is scoped to a tenant.
     """
     __tablename__ = 'tenants'
-    
-    tenant_id = Column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    tenant_id = Column(
+        PGUUID(
+            as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4)
     company_name = Column(String(255), nullable=False, unique=True)
-    industry = Column(String(100), nullable=False)  # e.g., "Retail", "Trades", "Healthcare"
-    subscription_tier = Column(String(50), nullable=False, default="Starter")  # e.g., "Starter", "Professional", "Enterprise"
+    # e.g., "Retail", "Trades", "Healthcare"
+    industry = Column(String(100), nullable=False)
+    # e.g., "Starter", "Professional", "Enterprise"
+    subscription_tier = Column(String(50), nullable=False, default="Starter")
     created_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
-    updated_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+    updated_at = Column(
+        TIMESTAMP,
+        nullable=False,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow)
+
     # Relationships
-    configs = relationship("TenantConfig", back_populates="tenant", cascade="all, delete-orphan")
-    knowledge_sources = relationship("KnowledgeSource", back_populates="tenant", cascade="all, delete-orphan")
-    interaction_logs = relationship("InteractionLog", back_populates="tenant", cascade="all, delete-orphan")
-    
+    configs = relationship(
+        "TenantConfig",
+        back_populates="tenant",
+        cascade="all, delete-orphan")
+    knowledge_sources = relationship(
+        "KnowledgeSource",
+        back_populates="tenant",
+        cascade="all, delete-orphan")
+    interaction_logs = relationship(
+        "InteractionLog",
+        back_populates="tenant",
+        cascade="all, delete-orphan")
+
     def __repr__(self):
-        return f"<Tenant(tenant_id={self.tenant_id}, company_name='{self.company_name}', industry='{self.industry}')>"
+        return f"<Tenant(tenant_id={
+            self.tenant_id}, company_name='{
+            self.company_name}', industry='{
+            self.industry}')>"
 
 
 class TenantConfig(Base):
@@ -51,21 +77,41 @@ class TenantConfig(Base):
     Stores runtime configuration injected into IntakeAgent and FulfillmentAgent.
     """
     __tablename__ = 'tenant_configs'
-    
-    config_id = Column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    tenant_id = Column(PGUUID(as_uuid=True), ForeignKey('tenants.tenant_id', ondelete='CASCADE'), nullable=False)
-    brand_voice = Column(Text, nullable=True)  # e.g., "Professional, concise, and helpful"
-    escalation_rules = Column(JSONB, nullable=True)  # e.g., {"max_refund": 50, "require_human_for": "angry_sentiment"}
-    active_channels = Column(JSONB, nullable=True)  # e.g., {"web_widget": true, "email": false}
-    custom_instructions = Column(Text, nullable=True)  # Additional agent instructions
+
+    config_id = Column(
+        PGUUID(
+            as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4)
+    tenant_id = Column(
+        PGUUID(
+            as_uuid=True),
+        ForeignKey(
+            'tenants.tenant_id',
+            ondelete='CASCADE'),
+        nullable=False)
+    # e.g., "Professional, concise, and helpful"
+    brand_voice = Column(Text, nullable=True)
+    # e.g., {"max_refund": 50, "require_human_for": "angry_sentiment"}
+    escalation_rules = Column(JSONB, nullable=True)
+    # e.g., {"web_widget": true, "email": false}
+    active_channels = Column(JSONB, nullable=True)
+    # Additional agent instructions
+    custom_instructions = Column(Text, nullable=True)
     created_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
-    updated_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+    updated_at = Column(
+        TIMESTAMP,
+        nullable=False,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow)
+
     # Relationships
     tenant = relationship("Tenant", back_populates="configs")
-    
+
     def __repr__(self):
-        return f"<TenantConfig(config_id={self.config_id}, tenant_id={self.tenant_id})>"
+        return f"<TenantConfig(config_id={
+            self.config_id}, tenant_id={
+            self.tenant_id})>"
 
 
 class KnowledgeSource(Base):
@@ -74,48 +120,98 @@ class KnowledgeSource(Base):
     Each source is embedded into the vector store; all chunks tagged with tenant_id for isolation.
     """
     __tablename__ = 'knowledge_sources'
-    
-    source_id = Column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    tenant_id = Column(PGUUID(as_uuid=True), ForeignKey('tenants.tenant_id', ondelete='CASCADE'), nullable=False, index=True)
-    source_type = Column(String(50), nullable=False)  # "PDF", "Website_URL", "Zendesk_Export", "Google_Sheet", etc.
-    source_name = Column(String(255), nullable=False)  # e.g., "Return Policy 2026"
-    source_uri = Column(String(1024), nullable=False)  # S3 link, web URL, or local file path
-    sync_status = Column(String(50), nullable=False, default="Pending")  # "Pending", "Embedded", "Failed", "Refreshing"
-    chunk_count = Column(Integer, nullable=True, default=0)  # Number of chunks created from this source
-    last_updated = Column(TIMESTAMP, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    source_id = Column(
+        PGUUID(
+            as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4)
+    tenant_id = Column(
+        PGUUID(
+            as_uuid=True),
+        ForeignKey(
+            'tenants.tenant_id',
+            ondelete='CASCADE'),
+        nullable=False,
+        index=True)
+    # "PDF", "Website_URL", "Zendesk_Export", "Google_Sheet", etc.
+    source_type = Column(String(50), nullable=False)
+    # e.g., "Return Policy 2026"
+    source_name = Column(String(255), nullable=False)
+    # S3 link, web URL, or local file path
+    source_uri = Column(String(1024), nullable=False)
+    # "Pending", "Embedded", "Failed", "Refreshing"
+    sync_status = Column(String(50), nullable=False, default="Pending")
+    # Number of chunks created from this source
+    chunk_count = Column(Integer, nullable=True, default=0)
+    last_updated = Column(
+        TIMESTAMP,
+        nullable=False,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow)
     created_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
-    
+
     # Relationships
     tenant = relationship("Tenant", back_populates="knowledge_sources")
-    embeddings = relationship("VectorEmbedding", back_populates="source", cascade="all, delete-orphan")
-    
+    embeddings = relationship(
+        "VectorEmbedding",
+        back_populates="source",
+        cascade="all, delete-orphan")
+
     def __repr__(self):
-        return f"<KnowledgeSource(source_id={self.source_id}, tenant_id={self.tenant_id}, source_type='{self.source_type}', sync_status='{self.sync_status}')>"
+        return f"<KnowledgeSource(source_id={
+            self.source_id}, tenant_id={
+            self.tenant_id}, source_type='{
+            self.source_type}', sync_status='{
+                self.sync_status}')>"
 
 
 class VectorEmbedding(Base):
     """
     Vector store entries with strict tenant isolation.
     Each chunk is tagged with tenant_id; similarity searches filter by tenant first.
-    
+
     Note: The actual embeddings (VECTOR columns) are typically stored in Milvus or pgvector.
     This table tracks metadata and links chunks back to their source and tenant.
     """
     __tablename__ = 'vector_embeddings'
-    
-    chunk_id = Column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    source_id = Column(PGUUID(as_uuid=True), ForeignKey('knowledge_sources.source_id', ondelete='CASCADE'), nullable=False, index=True)
-    tenant_id = Column(PGUUID(as_uuid=True), ForeignKey('tenants.tenant_id', ondelete='CASCADE'), nullable=False, index=True)
+
+    chunk_id = Column(
+        PGUUID(
+            as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4)
+    source_id = Column(
+        PGUUID(
+            as_uuid=True),
+        ForeignKey(
+            'knowledge_sources.source_id',
+            ondelete='CASCADE'),
+        nullable=False,
+        index=True)
+    tenant_id = Column(
+        PGUUID(
+            as_uuid=True),
+        ForeignKey(
+            'tenants.tenant_id',
+            ondelete='CASCADE'),
+        nullable=False,
+        index=True)
     content_payload = Column(Text, nullable=False)  # The human-readable text
-    embedding_vector = Column(String, nullable=True)  # Serialized embedding (if storing in PostgreSQL; otherwise null)
-    embedding_metadata = Column(JSONB, nullable=True)  # e.g., {"page_number": 4, "topic": "shipping", "confidence": 0.95}
+    # Serialized embedding (if storing in PostgreSQL; otherwise null)
+    embedding_vector = Column(String, nullable=True)
+    # e.g., {"page_number": 4, "topic": "shipping", "confidence": 0.95}
+    embedding_metadata = Column(JSONB, nullable=True)
     created_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
-    
+
     # Relationships
     source = relationship("KnowledgeSource", back_populates="embeddings")
-    
+
     def __repr__(self):
-        return f"<VectorEmbedding(chunk_id={self.chunk_id}, tenant_id={self.tenant_id}, source_id={self.source_id})>"
+        return f"<VectorEmbedding(chunk_id={
+            self.chunk_id}, tenant_id={
+            self.tenant_id}, source_id={
+            self.source_id})>"
 
 
 class InteractionLog(Base):
@@ -124,22 +220,46 @@ class InteractionLog(Base):
     Used for compliance, analytics, debugging, and tenant-specific reporting.
     """
     __tablename__ = 'interaction_logs'
-    
-    interaction_id = Column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    tenant_id = Column(PGUUID(as_uuid=True), ForeignKey('tenants.tenant_id', ondelete='CASCADE'), nullable=False, index=True)
-    customer_id = Column(String(255), nullable=True)  # Optional identifier for end customer
-    input_message = Column(Text, nullable=False)  # The customer's original query
-    agent_chain = Column(String(500), nullable=True)  # e.g., "IntakeAgent → FulfillmentAgent → ResolutionAgent"
+
+    interaction_id = Column(
+        PGUUID(
+            as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4)
+    tenant_id = Column(
+        PGUUID(
+            as_uuid=True),
+        ForeignKey(
+            'tenants.tenant_id',
+            ondelete='CASCADE'),
+        nullable=False,
+        index=True)
+    # Optional identifier for end customer
+    customer_id = Column(String(255), nullable=True)
+    # The customer's original query
+    input_message = Column(Text, nullable=False)
+    # e.g., "IntakeAgent → FulfillmentAgent → ResolutionAgent"
+    agent_chain = Column(String(500), nullable=True)
     output_message = Column(Text, nullable=True)  # The AI-generated response
-    escalated = Column(Boolean, nullable=False, default=False)  # Whether handed to human
+    escalated = Column(
+        Boolean,
+        nullable=False,
+        default=False)  # Whether handed to human
     escalation_reason = Column(Text, nullable=True)  # Why it was escalated
-    timestamp = Column(TIMESTAMP, nullable=False, default=datetime.utcnow, index=True)
-    
+    timestamp = Column(
+        TIMESTAMP,
+        nullable=False,
+        default=datetime.utcnow,
+        index=True)
+
     # Relationships
     tenant = relationship("Tenant", back_populates="interaction_logs")
-    
+
     def __repr__(self):
-        return f"<InteractionLog(interaction_id={self.interaction_id}, tenant_id={self.tenant_id}, escalated={self.escalated})>"
+        return f"<InteractionLog(interaction_id={
+            self.interaction_id}, tenant_id={
+            self.tenant_id}, escalated={
+            self.escalated})>"
 
 
 # ============================================================================
@@ -149,22 +269,24 @@ class InteractionLog(Base):
 def init_db(database_url: str = None) -> tuple:
     """
     Initialize the database engine and session factory.
-    
+
     Args:
-        database_url: PostgreSQL connection string. 
+        database_url: PostgreSQL connection string.
                       Format: postgresql://user:password@localhost/dbname
                       If None, uses ENV variable DATABASE_URL.
-    
+
     Returns:
         (engine, SessionLocal) tuple for use in the application.
     """
     if database_url is None:
         import os
-        database_url = os.getenv("DATABASE_URL", "postgresql://user:password@localhost/coastal_alpine_helpdesk")
-    
+        database_url = os.getenv(
+            "DATABASE_URL",
+            "postgresql://user:password@localhost/coastal_alpine_helpdesk")
+
     engine = create_engine(database_url, echo=False, pool_pre_ping=True)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    
+
     return engine, SessionLocal
 
 
@@ -184,10 +306,14 @@ def drop_all_tables(engine):
 
 def get_tenant_config(session, tenant_id: uuid.UUID) -> TenantConfig:
     """Retrieve the active configuration for a tenant."""
-    return session.query(TenantConfig).filter(TenantConfig.tenant_id == tenant_id).first()
+    return session.query(TenantConfig).filter(
+        TenantConfig.tenant_id == tenant_id).first()
 
 
-def get_tenant_knowledge(session, tenant_id: uuid.UUID, sync_status: str = "Embedded"):
+def get_tenant_knowledge(
+        session,
+        tenant_id: uuid.UUID,
+        sync_status: str = "Embedded"):
     """Retrieve all embedded knowledge sources for a tenant."""
     return session.query(KnowledgeSource).filter(
         KnowledgeSource.tenant_id == tenant_id,
@@ -197,10 +323,17 @@ def get_tenant_knowledge(session, tenant_id: uuid.UUID, sync_status: str = "Embe
 
 def get_tenant_embeddings(session, tenant_id: uuid.UUID):
     """Retrieve all vector embeddings for a tenant (tenant-isolated query)."""
-    return session.query(VectorEmbedding).filter(VectorEmbedding.tenant_id == tenant_id).all()
+    return session.query(VectorEmbedding).filter(
+        VectorEmbedding.tenant_id == tenant_id).all()
 
 
-def log_interaction(session, tenant_id: uuid.UUID, customer_id: str, input_msg: str, output_msg: str, escalated: bool = False):
+def log_interaction(
+        session,
+        tenant_id: uuid.UUID,
+        customer_id: str,
+        input_msg: str,
+        output_msg: str,
+        escalated: bool = False):
     """Log a customer interaction for audit and analytics."""
     log = InteractionLog(
         tenant_id=tenant_id,

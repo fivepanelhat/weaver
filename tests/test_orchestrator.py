@@ -1,10 +1,15 @@
-import pytest
 import sys
 import os
-# Ensure repo-local langgraph package is importable during tests
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from langgraph.orchestrator import build_agnostic_helpdesk
+# Ensure repo-local langgraph package is importable during tests
+sys.path.insert(
+    0,
+    os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__),
+            '..')))
+
+from langgraph.orchestrator import build_agnostic_helpdesk  # noqa: E402
 
 
 class MockLLM:
@@ -43,7 +48,9 @@ def test_graph_routes_to_fulfilment():
     vdb = MockVectorDBClient(docs)
     llm = MockLLM("OKAY")
     out = graph.run(state, vdb, llm)
-    assert any("Fulfilment task complete" in s for s in out.get("conversation_history", []))
+    assert any(
+        "Fulfilment task complete" in s for s in out.get(
+            "conversation_history", []))
 
 
 def test_graph_routes_to_escalation():
@@ -61,4 +68,6 @@ def test_graph_routes_to_escalation():
     vdb = MockVectorDBClient(docs)
     llm = MockLLM("ESCALATE")
     out = graph.run(state, vdb, llm)
-    assert any("Ticket escalated to human support" in s for s in out.get("conversation_history", []))
+    assert any(
+        "Ticket escalated to human support" in s for s in out.get(
+            "conversation_history", []))
