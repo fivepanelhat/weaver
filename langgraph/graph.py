@@ -20,15 +20,23 @@ class StateGraph:
     def add_node(self, name: str, func: Callable):
         self._nodes[name] = func
 
-    def add_edge(self, src: str, dst: str,
-                 condition: Optional[Callable[[dict], bool]] = None):
+    def add_edge(
+        self,
+        src: str,
+        dst: str,
+        condition: Optional[Callable[[dict], bool]] = None,
+    ):
         self._edges.setdefault(src, []).append((condition, dst))
 
     def set_entry_point(self, name: str):
         self._entry = name
 
-    def add_conditional_edges(self, src: str, condition_fn: Callable[[
-                              dict], str], mapping: Optional[Dict[str, str]] = None):
+    def add_conditional_edges(
+        self,
+        src: str,
+        condition_fn: Callable[[dict], str],
+        mapping: Optional[Dict[str, str]] = None,
+    ):
         """Convenience: store a condition function that returns a routing key.
 
         If mapping is provided, the returned key is mapped to a target node name.
@@ -49,18 +57,23 @@ class StateGraph:
 
 
 class _CompiledGraph:
-    def __init__(self, nodes: Dict[str, Callable],
-                 edges: Dict[str, List], entry: Optional[str]):
+    def __init__(
+        self,
+        nodes: Dict[str, Callable],
+        edges: Dict[str, List],
+        entry: Optional[str],
+    ):
         self._nodes = nodes
         self._edges = edges
         self._entry = entry
 
     def run(
-            self,
-            state: dict,
-            *runtime_args,
-            max_steps: int = 100,
-            **runtime_kwargs) -> dict:
+        self,
+        state: dict,
+        *runtime_args,
+        max_steps: int = 100,
+        **runtime_kwargs
+    ) -> dict:
         """Execute the graph starting from the entry point.
 
         `runtime_args` and `runtime_kwargs` are forwarded to node callables
@@ -84,8 +97,9 @@ class _CompiledGraph:
             # Merge conversational history intelligently
             if "conversation_history" in result:
                 existing = state.get("conversation_history", [])
-                state["conversation_history"] = existing + \
-                    result["conversation_history"]
+                state["conversation_history"] = (
+                    existing + result["conversation_history"]
+                )
                 # remove from result so normal update doesn't overwrite
                 del result["conversation_history"]
 

@@ -23,7 +23,8 @@ def create_mqtt_client():
         # (Pylance/Pyright)
         param_name = "".join(["callback_", "api_", "version"])
         kwargs[param_name] = getattr(
-            mqtt_client.CallbackAPIVersion, "VERSION2")
+            mqtt_client.CallbackAPIVersion, "VERSION2"
+        )
         return mqtt_client.Client(**kwargs)
     else:
         return mqtt_client.Client()
@@ -51,17 +52,16 @@ def push_fleet_policy(target_group, min_firmware_ver, allow_actuation):
         "timestamp": int(time.time()),
         "target_group": target_group,
         "min_required_version": min_firmware_ver,
-        "global_actuator_lockout": not allow_actuation
+        "global_actuator_lockout": not allow_actuation,
     }
 
     signed_envelope = sign_policy_payload(policy_config)
     client.publish(
-        POLICY_TOPIC,
-        json.dumps(signed_envelope),
-        qos=2,
-        retain=True)
+        POLICY_TOPIC, json.dumps(signed_envelope), qos=2, retain=True
+    )
     print(
-        f"[FLEET CONTROL] Pushed signed security policy to group: {target_group}")
+        f"[FLEET CONTROL] Pushed signed security policy to group: {target_group}"
+    )
     client.disconnect()
 
 
@@ -73,10 +73,9 @@ def on_heartbeat_received(client, userdata, msg):
             "last_seen": time.time(),
             "firmware_version": payload.get("version"),
             "battery_mv": payload.get("battery_mv"),
-            "posture_state": payload.get("posture")
+            "posture_state": payload.get("posture"),
         }
-        print(
-            f"[FLEET MONITOR] Node {node_id} reported in. Status: {
+        print(f"[FLEET MONITOR] Node {node_id} reported in. Status: {
                 payload.get('posture')}")
     except Exception as e:
         print(f"[FLEET ERROR] Corrupted heartbeat frame: {e}")

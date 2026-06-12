@@ -9,11 +9,12 @@ except Exception:
     # without the package
     class RecursiveCharacterTextSplitter:
         def __init__(
-                self,
-                chunk_size=500,
-                chunk_overlap=50,
-                length_function=len,
-                is_separator_regex=False):
+            self,
+            chunk_size=500,
+            chunk_overlap=50,
+            length_function=len,
+            is_separator_regex=False,
+        ):
             self.chunk_size = chunk_size
             self.chunk_overlap = chunk_overlap
 
@@ -52,7 +53,8 @@ class AgnosticDataIngestionEngine:
         )
 
     def chunk_and_tag_document(
-            self, raw_text: str, tenant_id: str, source_id: str) -> List[Dict[str, Any]]:
+        self, raw_text: str, tenant_id: str, source_id: str
+    ) -> List[Dict[str, Any]]:
         """
         Takes raw document text, slices it up, and strictly binds the tenant's
         identity to every single resulting chunk.
@@ -83,7 +85,6 @@ class AgnosticDataIngestionEngine:
             }
             processed_chunks.append(chunk_record)
 
-        print(
-            f"Processed {
+        print(f"Processed {
                 len(processed_chunks)} chunks for Tenant: {tenant_id}")
         return processed_chunks

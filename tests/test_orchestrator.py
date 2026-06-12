@@ -3,11 +3,8 @@ import os
 
 # Ensure repo-local langgraph package is importable during tests
 sys.path.insert(
-    0,
-    os.path.abspath(
-        os.path.join(
-            os.path.dirname(__file__),
-            '..')))
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+)
 
 from langgraph.orchestrator import build_agnostic_helpdesk  # noqa: E402
 
@@ -49,8 +46,9 @@ def test_graph_routes_to_fulfilment():
     llm = MockLLM("OKAY")
     out = graph.run(state, vdb, llm)
     assert any(
-        "Fulfilment task complete" in s for s in out.get(
-            "conversation_history", []))
+        "Fulfilment task complete" in s
+        for s in out.get("conversation_history", [])
+    )
 
 
 def test_graph_routes_to_escalation():
@@ -69,5 +67,6 @@ def test_graph_routes_to_escalation():
     llm = MockLLM("ESCALATE")
     out = graph.run(state, vdb, llm)
     assert any(
-        "Ticket escalated to human support" in s for s in out.get(
-            "conversation_history", []))
+        "Ticket escalated to human support" in s
+        for s in out.get("conversation_history", [])
+    )

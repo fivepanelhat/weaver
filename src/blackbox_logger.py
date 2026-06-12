@@ -3,7 +3,7 @@ import os
 import time
 from paho.mqtt import client as mqtt_client
 
-BROKER = '127.0.0.1'
+BROKER = "127.0.0.1"
 PORT = 1883
 TOPIC = "weaver/logs"
 LOG_FILE_PATH = os.path.join(os.path.dirname(__file__), "weaver_blackbox.log")
@@ -12,15 +12,16 @@ LOG_FILE_PATH = os.path.join(os.path.dirname(__file__), "weaver_blackbox.log")
 def on_connect(client, userdata, flags, rc, properties=None):
     if rc == 0:
         print(
-            f"[BLACK BOX] Successfully connected to broker. Subscribing to: {TOPIC}")
+            f"[BLACK BOX] Successfully connected to broker. Subscribing to: {TOPIC}"
+        )
         client.subscribe(TOPIC, qos=1)
     else:
         print(f"[ERROR] Failed to connect, return code {rc}")
 
 
 def on_message(client, userdata, msg):
-    timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-    log_payload = msg.payload.decode('utf-8', errors='ignore')
+    timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    log_payload = msg.payload.decode("utf-8", errors="ignore")
     log_entry = f"[{timestamp}] [{msg.topic}] {log_payload}\n"
 
     # Write directly to localized rolling file
@@ -38,9 +39,10 @@ def run_harvester():
 
     # Safely bypass linter checks by dynamically building initialization kwargs
     kwargs = {}
-    if hasattr(mqtt_client, 'CallbackAPIVersion'):
+    if hasattr(mqtt_client, "CallbackAPIVersion"):
         kwargs["callback_api_version"] = getattr(
-            mqtt_client, 'CallbackAPIVersion').VERSION2
+            mqtt_client, "CallbackAPIVersion"
+        ).VERSION2
 
     client = mqtt_client.Client(**kwargs)
 
@@ -57,5 +59,5 @@ def run_harvester():
         print(f"[CRITICAL] Client crashed: {e}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run_harvester()

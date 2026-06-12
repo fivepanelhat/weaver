@@ -13,8 +13,14 @@ Models:
 """
 
 from sqlalchemy import (
-    create_engine, Column, String, Text, TIMESTAMP,
-    ForeignKey, Integer, Boolean,
+    create_engine,
+    Column,
+    String,
+    Text,
+    TIMESTAMP,
+    ForeignKey,
+    Integer,
+    Boolean,
 )
 
 from sqlalchemy.ext.declarative import declarative_base
@@ -31,13 +37,12 @@ class Tenant(Base):
     Top-level ledger of businesses licensing the helpdesk platform.
     Every interaction, configuration, and piece of knowledge is scoped to a tenant.
     """
-    __tablename__ = 'tenants'
+
+    __tablename__ = "tenants"
 
     tenant_id = Column(
-        PGUUID(
-            as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4)
+        PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
     company_name = Column(String(255), nullable=False, unique=True)
     # e.g., "Retail", "Trades", "Healthcare"
     industry = Column(String(100), nullable=False)
@@ -48,21 +53,21 @@ class Tenant(Base):
         TIMESTAMP,
         nullable=False,
         default=datetime.utcnow,
-        onupdate=datetime.utcnow)
+        onupdate=datetime.utcnow,
+    )
 
     # Relationships
     configs = relationship(
-        "TenantConfig",
-        back_populates="tenant",
-        cascade="all, delete-orphan")
+        "TenantConfig", back_populates="tenant", cascade="all, delete-orphan"
+    )
     knowledge_sources = relationship(
         "KnowledgeSource",
         back_populates="tenant",
-        cascade="all, delete-orphan")
+        cascade="all, delete-orphan",
+    )
     interaction_logs = relationship(
-        "InteractionLog",
-        back_populates="tenant",
-        cascade="all, delete-orphan")
+        "InteractionLog", back_populates="tenant", cascade="all, delete-orphan"
+    )
 
     def __repr__(self):
         return f"<Tenant(tenant_id={
@@ -76,20 +81,17 @@ class TenantConfig(Base):
     The "brain manual" for the agnostic agents.
     Stores runtime configuration injected into IntakeAgent and FulfillmentAgent.
     """
-    __tablename__ = 'tenant_configs'
+
+    __tablename__ = "tenant_configs"
 
     config_id = Column(
-        PGUUID(
-            as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4)
+        PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
     tenant_id = Column(
-        PGUUID(
-            as_uuid=True),
-        ForeignKey(
-            'tenants.tenant_id',
-            ondelete='CASCADE'),
-        nullable=False)
+        PGUUID(as_uuid=True),
+        ForeignKey("tenants.tenant_id", ondelete="CASCADE"),
+        nullable=False,
+    )
     # e.g., "Professional, concise, and helpful"
     brand_voice = Column(Text, nullable=True)
     # e.g., {"max_refund": 50, "require_human_for": "angry_sentiment"}
@@ -103,7 +105,8 @@ class TenantConfig(Base):
         TIMESTAMP,
         nullable=False,
         default=datetime.utcnow,
-        onupdate=datetime.utcnow)
+        onupdate=datetime.utcnow,
+    )
 
     # Relationships
     tenant = relationship("Tenant", back_populates="configs")
@@ -119,21 +122,18 @@ class KnowledgeSource(Base):
     Inventory of raw data (PDFs, URLs, exports) uploaded by the business owner.
     Each source is embedded into the vector store; all chunks tagged with tenant_id for isolation.
     """
-    __tablename__ = 'knowledge_sources'
+
+    __tablename__ = "knowledge_sources"
 
     source_id = Column(
-        PGUUID(
-            as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4)
+        PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
     tenant_id = Column(
-        PGUUID(
-            as_uuid=True),
-        ForeignKey(
-            'tenants.tenant_id',
-            ondelete='CASCADE'),
+        PGUUID(as_uuid=True),
+        ForeignKey("tenants.tenant_id", ondelete="CASCADE"),
         nullable=False,
-        index=True)
+        index=True,
+    )
     # "PDF", "Website_URL", "Zendesk_Export", "Google_Sheet", etc.
     source_type = Column(String(50), nullable=False)
     # e.g., "Return Policy 2026"
@@ -148,7 +148,8 @@ class KnowledgeSource(Base):
         TIMESTAMP,
         nullable=False,
         default=datetime.utcnow,
-        onupdate=datetime.utcnow)
+        onupdate=datetime.utcnow,
+    )
     created_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
 
     # Relationships
@@ -156,7 +157,8 @@ class KnowledgeSource(Base):
     embeddings = relationship(
         "VectorEmbedding",
         back_populates="source",
-        cascade="all, delete-orphan")
+        cascade="all, delete-orphan",
+    )
 
     def __repr__(self):
         return f"<KnowledgeSource(source_id={
@@ -174,29 +176,24 @@ class VectorEmbedding(Base):
     Note: The actual embeddings (VECTOR columns) are typically stored in Milvus or pgvector.
     This table tracks metadata and links chunks back to their source and tenant.
     """
-    __tablename__ = 'vector_embeddings'
+
+    __tablename__ = "vector_embeddings"
 
     chunk_id = Column(
-        PGUUID(
-            as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4)
+        PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
     source_id = Column(
-        PGUUID(
-            as_uuid=True),
-        ForeignKey(
-            'knowledge_sources.source_id',
-            ondelete='CASCADE'),
+        PGUUID(as_uuid=True),
+        ForeignKey("knowledge_sources.source_id", ondelete="CASCADE"),
         nullable=False,
-        index=True)
+        index=True,
+    )
     tenant_id = Column(
-        PGUUID(
-            as_uuid=True),
-        ForeignKey(
-            'tenants.tenant_id',
-            ondelete='CASCADE'),
+        PGUUID(as_uuid=True),
+        ForeignKey("tenants.tenant_id", ondelete="CASCADE"),
         nullable=False,
-        index=True)
+        index=True,
+    )
     content_payload = Column(Text, nullable=False)  # The human-readable text
     # Serialized embedding (if storing in PostgreSQL; otherwise null)
     embedding_vector = Column(String, nullable=True)
@@ -219,21 +216,18 @@ class InteractionLog(Base):
     Audit trail of all customer interactions.
     Used for compliance, analytics, debugging, and tenant-specific reporting.
     """
-    __tablename__ = 'interaction_logs'
+
+    __tablename__ = "interaction_logs"
 
     interaction_id = Column(
-        PGUUID(
-            as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4)
+        PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
     tenant_id = Column(
-        PGUUID(
-            as_uuid=True),
-        ForeignKey(
-            'tenants.tenant_id',
-            ondelete='CASCADE'),
+        PGUUID(as_uuid=True),
+        ForeignKey("tenants.tenant_id", ondelete="CASCADE"),
         nullable=False,
-        index=True)
+        index=True,
+    )
     # Optional identifier for end customer
     customer_id = Column(String(255), nullable=True)
     # The customer's original query
@@ -242,15 +236,12 @@ class InteractionLog(Base):
     agent_chain = Column(String(500), nullable=True)
     output_message = Column(Text, nullable=True)  # The AI-generated response
     escalated = Column(
-        Boolean,
-        nullable=False,
-        default=False)  # Whether handed to human
+        Boolean, nullable=False, default=False
+    )  # Whether handed to human
     escalation_reason = Column(Text, nullable=True)  # Why it was escalated
     timestamp = Column(
-        TIMESTAMP,
-        nullable=False,
-        default=datetime.utcnow,
-        index=True)
+        TIMESTAMP, nullable=False, default=datetime.utcnow, index=True
+    )
 
     # Relationships
     tenant = relationship("Tenant", back_populates="interaction_logs")
@@ -266,6 +257,7 @@ class InteractionLog(Base):
 # Database Connection & Session Factory
 # ============================================================================
 
+
 def init_db(database_url: str = None) -> tuple:
     """
     Initialize the database engine and session factory.
@@ -280,9 +272,11 @@ def init_db(database_url: str = None) -> tuple:
     """
     if database_url is None:
         import os
+
         database_url = os.getenv(
             "DATABASE_URL",
-            "postgresql://user:password@localhost/coastal_alpine_helpdesk")
+            "postgresql://user:password@localhost/coastal_alpine_helpdesk",
+        )
 
     engine = create_engine(database_url, echo=False, pool_pre_ping=True)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -304,43 +298,54 @@ def drop_all_tables(engine):
 # Helper Functions for Tenant-Aware Queries
 # ============================================================================
 
+
 def get_tenant_config(session, tenant_id: uuid.UUID) -> TenantConfig:
     """Retrieve the active configuration for a tenant."""
-    return session.query(TenantConfig).filter(
-        TenantConfig.tenant_id == tenant_id).first()
+    return (
+        session.query(TenantConfig)
+        .filter(TenantConfig.tenant_id == tenant_id)
+        .first()
+    )
 
 
 def get_tenant_knowledge(
-        session,
-        tenant_id: uuid.UUID,
-        sync_status: str = "Embedded"):
+    session, tenant_id: uuid.UUID, sync_status: str = "Embedded"
+):
     """Retrieve all embedded knowledge sources for a tenant."""
-    return session.query(KnowledgeSource).filter(
-        KnowledgeSource.tenant_id == tenant_id,
-        KnowledgeSource.sync_status == sync_status
-    ).all()
+    return (
+        session.query(KnowledgeSource)
+        .filter(
+            KnowledgeSource.tenant_id == tenant_id,
+            KnowledgeSource.sync_status == sync_status,
+        )
+        .all()
+    )
 
 
 def get_tenant_embeddings(session, tenant_id: uuid.UUID):
     """Retrieve all vector embeddings for a tenant (tenant-isolated query)."""
-    return session.query(VectorEmbedding).filter(
-        VectorEmbedding.tenant_id == tenant_id).all()
+    return (
+        session.query(VectorEmbedding)
+        .filter(VectorEmbedding.tenant_id == tenant_id)
+        .all()
+    )
 
 
 def log_interaction(
-        session,
-        tenant_id: uuid.UUID,
-        customer_id: str,
-        input_msg: str,
-        output_msg: str,
-        escalated: bool = False):
+    session,
+    tenant_id: uuid.UUID,
+    customer_id: str,
+    input_msg: str,
+    output_msg: str,
+    escalated: bool = False,
+):
     """Log a customer interaction for audit and analytics."""
     log = InteractionLog(
         tenant_id=tenant_id,
         customer_id=customer_id,
         input_message=input_msg,
         output_message=output_msg,
-        escalated=escalated
+        escalated=escalated,
     )
     session.add(log)
     session.commit()

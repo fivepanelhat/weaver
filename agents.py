@@ -14,12 +14,13 @@ class IntakeAgent:
     """
 
     def __init__(
-            self,
-            knowledge_base_client,
-            memory_store,
-            tenant_id=None,
-            tenant_config=None,
-            db_session=None):
+        self,
+        knowledge_base_client,
+        memory_store,
+        tenant_id=None,
+        tenant_config=None,
+        db_session=None,
+    ):
         self.kb_client = knowledge_base_client
         self.memory = memory_store
         self.tenant_id = tenant_id
@@ -28,8 +29,7 @@ class IntakeAgent:
 
     def process_interaction(self, unified_message):
         """Main entry point from the Orchestrator."""
-        print(
-            f"Intake Agent: Processing incoming message ID {
+        print(f"Intake Agent: Processing incoming message ID {
                 unified_message.get('id')} for tenant {
                 self.tenant_id}")
 
@@ -41,19 +41,21 @@ class IntakeAgent:
 
         # 3. Update conversation state in Memory Store
         self.memory.update_context(
-            unified_message.get('id'),
-            customer_profile,
-            request_classification)
+            unified_message.get("id"), customer_profile, request_classification
+        )
 
         # 4. Query knowledge base for tenant-specific context
-        if request_classification == 'general_inquiry':
-            return self._query_knowledge_base(unified_message.get('content'))
+        if request_classification == "general_inquiry":
+            return self._query_knowledge_base(unified_message.get("content"))
         else:
             # Pass back to Orchestrator to hand off to Fulfilment or Resolution
             return {
                 "status": "handoff_required",
-                "target_agent": self._determine_next_agent(request_classification),
-                "context": customer_profile}
+                "target_agent": self._determine_next_agent(
+                    request_classification
+                ),
+                "context": customer_profile,
+            }
 
     def _collect_customer_info(self, message):
         # Extract tenant-aware user/customer profile data from the normalized
@@ -61,7 +63,7 @@ class IntakeAgent:
         return {
             "customer_id": message.get("customer_id"),
             "customer_name": message.get("customer_name"),
-            "tenant_id": self.tenant_id
+            "tenant_id": self.tenant_id,
         }
 
     def _classify_request_type(self, message):
@@ -77,7 +79,8 @@ class IntakeAgent:
         # Perform a tenant-aware RAG lookup via the knowledge base client.
         if not self.tenant_id:
             raise ValueError(
-                "Tenant ID is required for querying the knowledge base.")
+                "Tenant ID is required for querying the knowledge base."
+            )
 
         results = self.kb_client.query(query, tenant_id=self.tenant_id)
         prompt = self._build_rag_prompt(query, results)
@@ -97,12 +100,15 @@ class IntakeAgent:
 
     def _build_rag_prompt(self, query, results):
         brand_voice = self._get_config_value(
-            "brand_voice", "Helpful and concise.")
+            "brand_voice", "Helpful and concise."
+        )
         custom_instructions = self._get_config_value("custom_instructions", "")
 
-        knowledge_chunks = "\n\n".join(
-            [f"- {item['content']}" for item in results]
-        ) if results else "No relevant tenant knowledge was found."
+        knowledge_chunks = (
+            "\n\n".join([f"- {item['content']}" for item in results])
+            if results
+            else "No relevant tenant knowledge was found."
+        )
 
         return (
             f"You are a helpdesk assistant for tenant {self.tenant_id}.\n"
@@ -117,9 +123,9 @@ class IntakeAgent:
 
     def _determine_next_agent(self, classification):
         # Simple routing logic
-        if classification in ['order_update', 'purchase', 'booking']:
-            return 'FulfillmentAgent'
-        return 'ResolutionAgent'
+        if classification in ["order_update", "purchase", "booking"]:
+            return "FulfillmentAgent"
+        return "ResolutionAgent"
 
 
 class FulfilmentAgent:
@@ -137,13 +143,14 @@ class FulfilmentAgent:
     """
 
     def __init__(
-            self,
-            crm_client,
-            order_db,
-            llm_pool,
-            tenant_id=None,
-            escalation_rules=None,
-            db_session=None):
+        self,
+        crm_client,
+        order_db,
+        llm_pool,
+        tenant_id=None,
+        escalation_rules=None,
+        db_session=None,
+    ):
         self.crm_client = crm_client
         self.order_db = order_db
         self.llm_pool = llm_pool
@@ -153,17 +160,16 @@ class FulfilmentAgent:
 
     def execute_task(self, task_context):
         """Main execution block triggered by the Orchestrator."""
-        print(
-            f"Fulfillment Agent: Executing task for customer {
+        print(f"Fulfillment Agent: Executing task for customer {
                 task_context.get('customer_id')} on tenant {
                 self.tenant_id}")
 
-        intent = task_context.get('intent')
+        intent = task_context.get("intent")
 
         try:
-            if intent == 'process_order':
+            if intent == "process_order":
                 result = self._process_new_order(task_context)
-            elif intent == 'update_record':
+            elif intent == "update_record":
                 result = self._update_customer_record(task_context)
             else:
                 result = self._process_generic_task(task_context)
@@ -171,14 +177,15 @@ class FulfilmentAgent:
             return {
                 "status": "success",
                 "action_taken": result,
-                "message_to_customer": "Your request has been processed successfully."}
+                "message_to_customer": "Your request has been processed successfully.",
+            }
 
         except Exception as e:
             # If things go pear-shaped, prepare for handoff to Resolution
             return {
                 "status": "failed",
                 "error": str(e),
-                "handoff_required": "ResolutionAgent"
+                "handoff_required": "ResolutionAgent",
             }
 
     def _process_new_order(self, context):
@@ -200,7 +207,8 @@ class FulfilmentAgent:
         return {
             "task": "generic_task",
             "tenant_id": self.tenant_id,
-            "intent": context.get('intent')}
+            "intent": context.get("intent"),
+        }
 
 
 class ResolutionAgent:
@@ -218,11 +226,12 @@ class ResolutionAgent:
     """
 
     def __init__(
-            self,
-            telemetry_logger,
-            escalation_queue,
-            tenant_id=None,
-            compliance_mode=None):
+        self,
+        telemetry_logger,
+        escalation_queue,
+        tenant_id=None,
+        compliance_mode=None,
+    ):
         self.logger = telemetry_logger
         self.escalation = escalation_queue
         self.tenant_id = tenant_id
@@ -230,8 +239,7 @@ class ResolutionAgent:
 
     def handle_issue(self, issue_context):
         """Resolves edge cases or handles failed fulfilment tasks."""
-        print(
-            f"Resolution Agent: Troubleshooting issue {
+        print(f"Resolution Agent: Troubleshooting issue {
                 issue_context.get('issue_id')}")
 
         # Log the intervention for metrics
@@ -239,7 +247,7 @@ class ResolutionAgent:
 
         resolution_plan = self._generate_troubleshooting_steps(issue_context)
 
-        if not resolution_plan.get('can_auto_resolve'):
+        if not resolution_plan.get("can_auto_resolve"):
             return self._escalate_to_human(issue_context)
 
         return self._apply_fix(resolution_plan)
@@ -257,4 +265,5 @@ class ResolutionAgent:
         self.escalation.push(context)
         return {
             "status": "escalated",
-            "message": "A human agent will be with you shortly."}
+            "message": "A human agent will be with you shortly.",
+        }

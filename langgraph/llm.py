@@ -1,6 +1,5 @@
 """Local LLM wrapper with Ollama support and a deterministic fallback."""
 
-
 try:
     from langchain_community.llms import Ollama
 except Exception:

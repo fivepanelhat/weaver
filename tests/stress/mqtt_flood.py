@@ -4,7 +4,7 @@ import threading
 import random
 from paho.mqtt import client as mqtt_client
 
-BROKER = '127.0.0.1'
+BROKER = "127.0.0.1"
 PORT = 1883
 TOPIC = "manakai/soil/stress"
 NUM_SIMULATED_NODES = 50
@@ -12,13 +12,14 @@ MESSAGES_PER_NODE = 100
 
 
 def simulate_node(node_id):
-    client_id = f'stress-node-{node_id}'
+    client_id = f"stress-node-{node_id}"
 
     # Safely bypass linter checks by dynamically building initialization kwargs
     kwargs = {"client_id": client_id}
-    if hasattr(mqtt_client, 'CallbackAPIVersion'):
+    if hasattr(mqtt_client, "CallbackAPIVersion"):
         kwargs["callback_api_version"] = getattr(
-            mqtt_client, 'CallbackAPIVersion').VERSION2
+            mqtt_client, "CallbackAPIVersion"
+        ).VERSION2
 
     client = mqtt_client.Client(**kwargs)
 
@@ -42,10 +43,11 @@ def simulate_node(node_id):
         print(f"Node {node_id} crashed: {e}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print(
         f"Starting flood test: Spawning {NUM_SIMULATED_NODES} nodes "
-        f"blasting {MESSAGES_PER_NODE} packets each...")
+        f"blasting {MESSAGES_PER_NODE} packets each..."
+    )
     start_time = time.time()
 
     threads = []
@@ -59,8 +61,7 @@ if __name__ == '__main__':
 
     duration = time.time() - start_time
     total_msgs = NUM_SIMULATED_NODES * MESSAGES_PER_NODE
-    print(
-        f"Test finished. Dispatched {total_msgs} messages in {
+    print(f"Test finished. Dispatched {total_msgs} messages in {
             duration:.2f} seconds ({
             total_msgs /
             duration:.1f} msgs/sec).")
