@@ -1,6 +1,7 @@
 # Sovereign-Edge-Firmware/src/attestation_agent.py
 import subprocess
 import os
+import tempfile
 
 
 def generate_tpm_quote(nonce_hex):
@@ -11,10 +12,11 @@ def generate_tpm_quote(nonce_hex):
     print(f"[TPM] Received attestation challenge nonce: {nonce_hex}")
 
     # Paths for temporary cryptographic structures
-    nonce_bin_path = "/tmp/nonce.bin"
-    quote_path = "/tmp/quote.bin"
-    pcr_path = "/tmp/pcr.bin"
-    sig_path = "/tmp/quote.sig"
+    tmp_dir = tempfile.gettempdir()
+    nonce_bin_path = os.path.join(tmp_dir, "nonce.bin")
+    quote_path = os.path.join(tmp_dir, "quote.bin")
+    pcr_path = os.path.join(tmp_dir, "pcr.bin")
+    sig_path = os.path.join(tmp_dir, "quote.sig")
 
     try:
         # 1. Write the incoming hex nonce to raw binary
